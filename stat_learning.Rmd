@@ -1,0 +1,35 @@
+---
+title: "stat_learning"
+author: "rl3411"
+date: "2023-12-07"
+output: github_document
+---
+
+
+```{r}
+library(tidyverse)
+library(glmnet)
+set.seed(11)
+```
+
+## Lasso
+
+```{r}
+bwt_df = 
+  read_csv("data/birthweight.csv") |> 
+  janitor::clean_names() |>
+  mutate(
+    babysex = as.factor(babysex),
+    babysex = fct_recode(babysex, "male" = "1", "female" = "2"),
+    frace = as.factor(frace),
+    frace = fct_recode(
+      frace, "white" = "1", "black" = "2", "asian" = "3", 
+      "puerto rican" = "4", "other" = "8"),
+    malform = as.logical(malform),
+    mrace = as.factor(mrace),
+    mrace = fct_recode(
+      mrace, "white" = "1", "black" = "2", "asian" = "3", 
+      "puerto rican" = "4")) |> 
+  sample_n(200)
+```
+
