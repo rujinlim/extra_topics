@@ -14,6 +14,8 @@ set.seed(11)
 
 ## Lasso
 
+Useful when we have many covariates
+
 ```{r}
 bwt_df = 
   read_csv("data/birthweight.csv") |> 
@@ -32,4 +34,85 @@ bwt_df =
       "puerto rican" = "4")) |> 
   sample_n(200)
 ```
+
+
+Get predictors and outcome
+
+```{r}
+# set the design matrix
+
+x = model.matrix(bwt ~ ., bwt_df)[, -1]
+y = bwt_df |> pull(bwt)
+```
+
+Start fitting lasso.
+
+```{r}
+lambda = 10^(seq(3,-2, -0.1))
+
+lasso_fit = 
+  glmnet(x, y, lambda = lambda) # if we don't specify lambda, glmnet will do it for you (or try to)
+
+lasso_cv = 
+  cv.glmnet(x, y, lambda = lambda)
+
+lambda_opt = lasso_cv$lambda.min
+```
+
+Let's look at lasso results
+
+```{r}
+lasso_fit |> 
+  broom::tidy() |> 
+  filter(step == 42)
+```
+
+Create visualizations for regression
+
+```{r}
+lasso_fit |> 
+  broom::tidy() |> 
+  select(term, lambda, estimate) |> 
+  complete(term, lambda, fill = list(estimate = 0)) |> 
+  filter(term != "(Intercept)")  |> 
+  ggplot(aes(x = log(lambda,10), y = estimate, color = term, group = term)) +
+  geom_path()
+```
+
+Show the CV results
+
+```{r}
+lasso_cv |> 
+  broom::tidy() |> 
+  ggplot(aes(x = log(lambda, 10), estimate)) +
+  geom_point()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
